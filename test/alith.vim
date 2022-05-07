@@ -24,11 +24,11 @@ endfunction
 function s:suite.__GetMatchPosList__()
   let child = themis#suite('GetMatchPosList()')
 
-  function child.test1()
+  function child.test_match_one_character()
     call s:assert.equals(s:funcs.GetMatchPosList(1, 1, '.'), [])
   endfunction
 
-  function child.test2()
+  function child.test_match_string()
     let lines =<< trim END
       aaa bbb
     END
@@ -38,7 +38,7 @@ function s:suite.__GetMatchPosList__()
           \[[1, 1, 1, 3]])
   endfunction
 
-  function child.test3()
+  function child.test_with_empty_line()
     let lines =<< trim END
       |aaa|bbb|
       |c|d|
@@ -62,7 +62,7 @@ function s:suite.__GetMatchPosList__()
     call Check(2, 3)
   endfunction
 
-  function child.test4()
+  function child.test_regex_over_lines()
     let lines =<< trim END
       line1
       line2
@@ -75,6 +75,18 @@ function s:suite.__GetMatchPosList__()
           \ [[2, 5, 3, 5]])
     call s:assert.equals(s:funcs.GetMatchPosList(1, 3, 'line2\nline2'),
           \ [])
+  endfunction
+
+  function child.test_cursor_stays()
+    call setline(1, ['|aa|bb|', '|a|b|'])
+    call cursor(1, 1)
+    call s:funcs.GetMatchPosList(1, 2, '|')
+    call s:assert.equals(getcurpos()[1 : 2], [1, 1])
+  endfunction
+
+  function child.test_invalid_regex()
+    call setline(1, 'a')
+    call s:assert.equals(s:funcs.GetMatchPosList(1, 1, '\(a'), [])
   endfunction
 endfunction
 
@@ -186,5 +198,12 @@ function s:suite.__DoAlign__()
     call setline(1, lines)
     call s:funcs.DoAlign(1, 3, '|')
     call s:assert.equals(getline(1, '$'), expected)
+  endfunction
+
+  function child.test_cursor_stays()
+    call setline(1, ['|aa|bb|', '|a|b|'])
+    call cursor(1, 1)
+    call s:funcs.DoAlign(1, 2, '|')
+    call s:assert.equals(getcurpos()[1 : 2], [1, 1])
   endfunction
 endfunction
