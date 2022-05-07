@@ -109,6 +109,10 @@ enddef
 #   ...
 # ]
 def GetMatchPosList(line1: number, line2: number, reg: string): list<list<number>>
+  if !IsValidRegex(reg)
+    return []
+  endif
+
   var curpos = getcurpos()
   var poslist: list<list<number>>
   var lastline = line('$')
