@@ -24,7 +24,7 @@ endfunction
 function s:suite.__GetMatchPosList__()
   let child = themis#suite('GetMatchPosList()')
 
-  function child.test_match_one_character()
+  function child.test_no_match()
     call s:assert.equals(s:funcs.GetMatchPosList(1, 1, '.'), [])
   endfunction
 
