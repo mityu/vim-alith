@@ -15,6 +15,7 @@ function! s:getScriptFuncs(path) abort
 endfunction
 
 let s:funcs = s:getScriptFuncs('autoload/alith.vim')
+call themis#func_alias(s:funcs)
 
 
 function s:suite.before_each()
