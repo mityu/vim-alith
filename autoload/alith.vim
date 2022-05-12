@@ -91,8 +91,10 @@ def DoAlign(line1: number, line2: number, reg: string)
     var i = 0
     for l in lens
       formatted ..= strpart(linerest, 0, l[LenInBytes])
-        .. repeat(' ', maxLens[i] - l[LenInWidth])
       linerest = strpart(linerest, l[LenInBytes])
+      if linerest !=# ''  # Avoid adding meaningless whitespaces at EOL.
+        formatted ..= repeat(' ', maxLens[i] - l[LenInWidth])
+      endif
       i += 1
     endfor
     formatted ..= linerest

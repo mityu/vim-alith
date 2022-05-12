@@ -227,6 +227,12 @@ function s:suite.__DoAlign__()
     call s:assert.equals(getline(1, '$'), ['あ  ,', 'ああ,'])
   endfunction
 
+  function child.test_avoid_meaningless_whitespaces()
+    call setline(1, ['01234', '0123', 'a@'])
+    call s:funcs.DoAlign(1, 3, '@\|\_$\zs')
+    call s:assert.equals(getline(1, '$'), ['01234', '0123', 'a    @'])
+  endfunction
+
   function child.test_cursor_stays()
     call setline(1, ['|aa|bb|', '|a|b|'])
     call cursor(1, 1)
