@@ -90,6 +90,7 @@ enddef
 
 # Highlight matched strings
 def Preview(line1: number, line2: number, reg: string)
+  # TODO: Add support for highlight of the end of line.
   var curbufnr = GetCurrentBufnr()
   var poslist =
     CallInBuffer(curbufnr, function('GetMatchPosList', [line1, line2, reg]))
@@ -113,16 +114,25 @@ def GetMatchPosList(line1: number, line2: number, reg: string): list<list<number
     return []
   endif
 
-  var curpos = getcurpos()
+  var firstcurpos = getcurpos()
   var poslist: list<list<number>>
   var lastline = line('$')
   var startTime = reltime()
+  final notFound = [0, 0]
   try
     cursor(line1, 1)
-    while search(reg, 'cW', line2, &redrawtime) != 0
-      var startpos = getcurpos()[1 : 2]
-      search(reg, 'ceW', line2, &redrawtime)
-      var endpos = getcurpos()[1 : 2]
+    while true
+      var startpos: list<number>
+      var curpos = getcurpos()
+      try
+        startpos = searchpos(reg, 'cW', line2, &redrawtime)
+      finally
+        setpos('.', curpos)
+      endtry
+      if startpos == notFound
+        break
+      endif
+      var endpos = searchpos(reg, 'ceW', line2, &redrawtime)
 
       poslist->add(startpos + endpos)
 
@@ -131,11 +141,9 @@ def GetMatchPosList(line1: number, line2: number, reg: string): list<list<number
         break
       endif
 
-      # `silent!` is to silence beep.
-      # Checking col('$') may be smarter, but I'm not sure it surely work when
-      # 'virtualedit' option is set.
-      silent! normal! l
-      if col('.') == endpos[1]
+      if (virtcol('.') + 1) < virtcol('$')
+        normal! l
+      else
         if endpos[0] == lastline  # At the end of file. Finish.
           break
         endif
@@ -143,7 +151,7 @@ def GetMatchPosList(line1: number, line2: number, reg: string): list<list<number
       endif
     endwhile
   finally
-    setpos('.', curpos)
+    setpos('.', firstcurpos)
   endtry
   return poslist
 enddef

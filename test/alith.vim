@@ -89,6 +89,20 @@ function s:suite.__GetMatchPosList__()
     call setline(1, 'a')
     call s:assert.equals(s:funcs.GetMatchPosList(1, 1, '\(a'), [])
   endfunction
+
+  function child.test_zero_width_regex1()
+    call setline(1, ['a', 'a'])
+    call s:assert.equals(
+          \s:funcs.GetMatchPosList(1, 2, 'a\zs'),
+          \[[1, 2, 1, 2], [2, 2, 2, 2]])
+  endfunction
+
+  function child.test_zero_width_regex2()
+    call setline(1, ['a, b', 'aa, b'])
+    call s:assert.equals(
+          \s:funcs.GetMatchPosList(1, 2, ',\zs'),
+          \[[1, 3, 1, 3], [2, 4, 2, 4]])
+  endfunction
 endfunction
 
 function s:suite.__Preview__()
@@ -199,6 +213,12 @@ function s:suite.__DoAlign__()
     call setline(1, lines)
     call s:funcs.DoAlign(1, 3, '|')
     call s:assert.equals(getline(1, '$'), expected)
+  endfunction
+
+  function child.test_zero_width_regex()
+    call setline(1, ['a: b', 'aa: b'])
+    call s:funcs.DoAlign(1, 3, ':\zs')
+    call s:assert.equals(getline(1, '$'), ['a:  b', 'aa: b'])
   endfunction
 
   function child.test_cursor_stays()
