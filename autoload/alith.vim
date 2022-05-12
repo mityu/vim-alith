@@ -41,21 +41,32 @@ def DoAlign(line1: number, line2: number, reg: string)
     return
   endif
 
-  var sectionLens: dict<list<number>>
+  var sectionLens: dict<list<list<number>>>
+  final LenInBytes = 0
+  final LenInWidth = 1
   {
+    var linestr: string
     var prevline = 0
     var prevcol = 1
     for p in poslist
-      if p[0] != prevline
-        sectionLens[p[0]] = []
-        prevline = p[0]
+      var line = p[0]
+      var col = p[1]
+      if line != prevline
+        sectionLens[line] = []
+        prevline = line
         prevcol = 1
+        linestr = getline(line)
       endif
-      sectionLens[p[0]]->add(p[1] - prevcol)
-      prevcol = p[1]
+
+      sectionLens[line]->add([
+        col - prevcol,
+        linestr->strpart(prevcol - 1, col - prevcol)->strdisplaywidth()
+      ])
+      prevcol = col
     endfor
   }
 
+  # maxLens: [Max length for section 1, Max length for secton 2, ...]
   var maxLens: list<number>
   for lens in values(sectionLens)
     var repeatTimes = len(lens)
@@ -65,7 +76,7 @@ def DoAlign(line1: number, line2: number, reg: string)
       endfor
     endif
     for i in range(repeatTimes)
-      var l = lens[i]
+      var l = lens[i][LenInWidth]
       if l > maxLens[i]
         maxLens[i] = l
       endif
@@ -79,8 +90,9 @@ def DoAlign(line1: number, line2: number, reg: string)
     var formatted = ''
     var i = 0
     for l in lens
-      formatted ..= strpart(linerest, 0, l) .. repeat(' ', maxLens[i] - l)
-      linerest = linerest[l :]
+      formatted ..= strpart(linerest, 0, l[LenInBytes])
+        .. repeat(' ', maxLens[i] - l[LenInWidth])
+      linerest = strpart(linerest, l[LenInBytes])
       i += 1
     endfor
     formatted ..= linerest

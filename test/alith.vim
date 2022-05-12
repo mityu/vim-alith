@@ -221,6 +221,12 @@ function s:suite.__DoAlign__()
     call s:assert.equals(getline(1, '$'), ['a:  b', 'aa: b'])
   endfunction
 
+  function child.test_with_multibyte_chars()
+    call setline(1, ['あ,', 'ああ,'])
+    call s:funcs.DoAlign(1, 2, ',')
+    call s:assert.equals(getline(1, '$'), ['あ  ,', 'ああ,'])
+  endfunction
+
   function child.test_cursor_stays()
     call setline(1, ['|aa|bb|', '|a|b|'])
     call cursor(1, 1)
