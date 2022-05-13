@@ -103,6 +103,23 @@ function s:suite.__GetMatchPosList__()
           \s:funcs.GetMatchPosList(1, 2, ',\zs'),
           \[[1, 3, 1, 3], [2, 4, 2, 4]])
   endfunction
+
+  function child.test_with_virtualedit_enabled()
+    try
+      set virtualedit=all
+      call setline(1, ['a', 'a'])
+      call s:assert.equals(
+            \s:funcs.GetMatchPosList(1, 2, 'a\zs'),
+            \[[1, 2, 1, 2], [2, 2, 2, 2]])
+
+      set virtualedit=onemore
+      call s:assert.equals(
+            \s:funcs.GetMatchPosList(1, 2, 'a\zs'),
+            \[[1, 2, 1, 2], [2, 2, 2, 2]])
+    finally
+      set virtualedit&
+    endtry
+  endfunction
 endfunction
 
 function s:suite.__Preview__()
