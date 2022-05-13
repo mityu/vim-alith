@@ -203,6 +203,9 @@ def GetMatchPosList(line1: number, line2: number, reg: string): list<list<number
 enddef
 
 def IsValidRegex(reg: string): bool
+  if reg ==# ''
+    return false
+  endif
   try
     eval '' =~# reg
   catch
