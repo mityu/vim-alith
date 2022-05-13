@@ -4,6 +4,7 @@ final propName = 'plugin-alith'
 if prop_type_get(propName) == {}
   prop_type_add(propName, {highlight: 'IncSearch', priority: 100})
 endif
+var hlPopupIdList: list<number>
 
 export def Alith(line1: number, line2: number, cmdline_regex: string = '')
   if cmdline_regex !=# ''
@@ -23,7 +24,7 @@ export def Alith(line1: number, line2: number, cmdline_regex: string = '')
   catch /^Vim:Interrupt$/
     # Fallthrough
   finally
-    prop_remove({type: propName, bufnr: GetCurrentBufnr(), all: true})
+    ClearPreviewHighlights()
     augroup plugin-alith
       autocmd!
     augroup END
@@ -104,16 +105,47 @@ enddef
 
 # Highlight matched strings
 def Preview(line1: number, line2: number, reg: string)
-  # TODO: Add support for highlight of the end of line.
   var curbufnr = GetCurrentBufnr()
   var poslist =
     CallInBuffer(curbufnr, function('GetMatchPosList', [line1, line2, reg]))
     ->map((_, v) => {
-    v[3] += 1
-    return v
-  })
-  prop_remove({type: propName, bufnr: curbufnr, all: true})
+      v[3] += 1
+      return v
+    })
+  var hlEolPoslist: list<list<number>>
+  var prevline = 0
+  var colEOL = 0
+  for pos in poslist
+    if prevline != pos[0]
+      prevline = pos[0]
+      colEOL = CallInBuffer(curbufnr, function('GetEOLCol', [pos[0]]))
+    endif
+    if pos[1] >= colEOL
+      hlEolPoslist->add([pos[0], pos[1]])
+    endif
+  endfor
+
+  ClearPreviewHighlights()
+
   prop_add_list({bufnr: curbufnr, type: propName}, poslist)
+  if !empty(hlEolPoslist)
+    var curwinID = bufwinid(curbufnr)
+    for pos in hlEolPoslist
+      var p = screenpos(curwinID, pos[0], pos[1])
+      var popupID =
+        popup_create(' ', {line: p.row, col: p.col, highlight: 'IncSearch'})
+      hlPopupIdList->add(popupID)
+    endfor
+  endif
+enddef
+
+def ClearPreviewHighlights()
+  var curbufnr = GetCurrentBufnr()
+  prop_remove({type: propName, bufnr: curbufnr, all: true})
+  for id in hlPopupIdList
+    popup_close(id)
+  endfor
+  hlPopupIdList = []
 enddef
 
 
@@ -177,6 +209,18 @@ def IsValidRegex(reg: string): bool
     return false
   endtry
   return true
+enddef
+
+def GetEOLCol(line: number): number
+  var curpos = getcurpos()
+  var colEOL = 0
+  try
+    cursor(line, 1)
+    colEOL = col('$')
+  finally
+    setpos('.', curpos)
+  endtry
+  return colEOL
 enddef
 
 def GetCurrentBufnr(): number

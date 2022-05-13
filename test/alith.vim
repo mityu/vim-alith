@@ -109,6 +109,7 @@ function s:suite.__Preview__()
   let child = themis#suite('Preview()')
 
   function child.after_each()
+    call s:funcs.ClearPreviewHighlights()
     %bwipeout!
   endfunction
 
@@ -127,6 +128,7 @@ function s:suite.__Preview__()
     call s:assert.equals(
           \prop_list(3)->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')}),
           \[#{col: 1, length: 3}, #{col: 5, length: 3}])
+    call s:assert.true(empty(popup_list()))
   endfunction
 
   function child.test_clear_props_on_redraw()
@@ -155,6 +157,42 @@ function s:suite.__Preview__()
     call s:assert.equals(
           \prop_list(2)->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')}),
           \[#{col: 1, length: 3}])
+  endfunction
+
+  function child.test_highlight_EOL_with_popup_window()
+    call setline(1, 'a')
+    call s:funcs.Preview(1, 1, 'a\zs')
+
+    let popupIDs = popup_list()
+    call s:assert.equals(len(popupIDs), 1)
+
+    normal! gg
+    let popupPos = popup_getpos(popupIDs[0])
+    call s:assert.equals(popupPos.col, screenpos(win_getid(), 1, col('$')).col, 'col')
+    call s:assert.equals(popupPos.line, screenpos(win_getid(), 1, col('$')).row, 'line')
+    call s:assert.equals(popupPos.width, 1, 'width')
+    call s:assert.equals(popupPos.height, 1, 'height')
+    call s:assert.equals(popupPos.visible, 1, 'visible')
+    call s:assert.equals(popupPos.scrollbar, 0, 'scrollbar')
+  endfunction
+
+  function child.test_highlight_EOL_with_popup_window_with_multibyte_characters()
+    call setline(1, 'あ')
+    call s:funcs.Preview(1, 1, 'あ\zs')
+
+    let popupIDs = popup_list()
+    call s:assert.equals(len(popupIDs), 1)
+
+    normal! gg
+    let popupPos = popup_getpos(popupIDs[0])
+    call s:assert.equals(popupPos.col, screenpos(win_getid(), 1, col('$')).col, 'col')
+    call s:assert.equals(popupPos.line, screenpos(win_getid(), 1, col('$')).row, 'line')
+    call s:assert.equals(popupPos.width, 1, 'width')
+    call s:assert.equals(popupPos.height, 1, 'height')
+    call s:assert.equals(popupPos.visible, 1, 'visible')
+    call s:assert.equals(popupPos.scrollbar, 0, 'scrollbar')
+
+    call s:funcs.ClearPreviewHighlights()
   endfunction
 endfunction
 
