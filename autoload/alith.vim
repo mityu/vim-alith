@@ -107,7 +107,7 @@ enddef
 def Preview(line1: number, line2: number, reg: string)
   var curbufnr = GetCurrentBufnr()
   var poslist =
-    CallInBuffer(curbufnr, function('GetMatchPosList', [line1, line2, reg]))
+    CallInBuffer(curbufnr, function('GetMatchPosList', [line1, line2, reg, true]))
     ->map((_, v) => {
       v[3] += 1
       return v
@@ -155,7 +155,7 @@ enddef
 #   [startline2, startcol2, endline2, endcol2],
 #   ...
 # ]
-def GetMatchPosList(line1: number, line2: number, reg: string): list<list<number>>
+def GetMatchPosList(line1: number, line2: number, reg: string, checkTimeout: bool = false): list<list<number>>
   if !IsValidRegex(reg)
     return []
   endif
@@ -183,7 +183,7 @@ def GetMatchPosList(line1: number, line2: number, reg: string): list<list<number
       poslist->add(startpos + endpos)
 
       # Check timeouted
-      if reltime(startTime)->reltimefloat() * 1000 > &redrawtime
+      if checkTimeout && reltime(startTime)->reltimefloat() * 1000 > &redrawtime
         break
       endif
 
