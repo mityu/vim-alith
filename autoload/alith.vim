@@ -23,6 +23,11 @@ export def Alith(line1: number, line2: number, cmdline_regex: string = '')
     regex = input('regex> ')
   catch /^Vim:Interrupt$/
     # Fallthrough
+  catch
+    echohl Error
+    echomsg v:throwpoint
+    echomsg v:exception
+    echohl NONE
   finally
     ClearPreviewHighlights()
     augroup plugin-alith
