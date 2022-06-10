@@ -184,6 +184,9 @@ def GetMatchPosList(line1: number, line2: number, reg: string, checkTimeout: boo
         break
       endif
       var endpos = searchpos(reg, 'ceW', line2, &redrawtime)
+      if endpos == notFound
+        endpos = startpos
+      endif
 
       poslist->add(startpos + endpos)
 

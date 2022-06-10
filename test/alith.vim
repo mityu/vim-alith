@@ -120,6 +120,13 @@ function s:suite.__GetMatchPosList__()
       set virtualedit&
     endtry
   endfunction
+
+  function child.test_endpos_not_found()
+    call setline(1, '\')
+    call s:assert.equals(
+          \s:funcs.GetMatchPosList(1, 1, '\zs\ze\'),
+          \[[1, 1, 1, 1]])
+  endfunction
 endfunction
 
 function s:suite.__Preview__()
