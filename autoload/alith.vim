@@ -160,6 +160,7 @@ enddef
 #   [startline2, startcol2, endline2, endcol2],
 #   ...
 # ]
+# The columns are in byte index.
 def GetMatchPosList(line1: number, line2: number, reg: string, checkTimeout: bool = false): list<list<number>>
   if !IsValidRegex(reg)
     return []
@@ -183,8 +184,17 @@ def GetMatchPosList(line1: number, line2: number, reg: string, checkTimeout: boo
       if startpos == notFound
         break
       endif
+      # NOTE: Even if startpos is found, endpos may not be found.
+      #   :enew
+      #   :call setline(1, '\')
+      #   :normal! gg0
+      #   :echo searchpos('\zs\ze\',  'cW') searchpos('\zs\ze\', 'ceW')
+      #   "-> [1, 1] [0, 0]
       var endpos = searchpos(reg, 'ceW', line2, &redrawtime)
       if endpos == notFound
+        # We don't know how long given regex matches actually, but we are sure
+        # that given regex matches at startpos. Let's make endpos equals to
+        # the startpos when the endpos is not found.
         endpos = startpos
       endif
 
