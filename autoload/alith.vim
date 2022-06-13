@@ -14,8 +14,8 @@ export def Alith(line1: number, line2: number, cmdline_regex: string = '')
 
   augroup plugin-alith
     autocmd!
-    execute printf('autocmd CmdlineChanged @ Preview(%d, %d, getcmdline())|redraw', line1, line2)
-    execute printf('autocmd TextChanged,TextChangedI,CursorMoved * Preview(%d, %d, getline("."))|redraw', line1, line2)
+    execute $'autocmd CmdlineChanged @ Preview({line1}, {line2}, getcmdline())|redraw'
+    execute $'autocmd TextChanged,TextChangedI,CursorMoved * Preview({line1}, {line2}, getline("."))|redraw'
   augroup END
 
   var regex = ''
