@@ -252,7 +252,7 @@ def GetCurrentBufnr(): number
 enddef
 
 var FuncWrapper: func(): void
-def CallInBuffer(bufnr: number, F: func): any
+def CallInBuffer(bufnr: number, F: func(): any): any
   var winID = bufwinid(bufnr)
   var retval: any
   FuncWrapper = () => {
