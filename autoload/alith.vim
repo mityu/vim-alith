@@ -211,6 +211,7 @@ def GetMatchPosList(line1: number, line2: number, reg: string, checkTimeout: boo
         # that given regex matches at startpos. Let's assume the given regex
         # matches the one character under the cursor.
         endpos = copy(startpos)
+        call('cursor', startpos)
       endif
       endpos[1] += getline('.')->strpart(endpos[1] - 1)[0]->strlen()
 
