@@ -36,7 +36,7 @@ function s:suite.__GetMatchPosList__()
     call setline(1, lines)
     call s:assert.equals(
           \s:funcs.GetMatchPosList(1, len(lines), 'aaa'),
-          \[[1, 1, 1, 3]])
+          \[[1, 1, 1, 4]])
   endfunction
 
   function child.test_with_empty_line()
@@ -49,7 +49,7 @@ function s:suite.__GetMatchPosList__()
     call setline(1, lines)
     let poslist = [[1, 5, 9], [1, 3, 5], [], [1, 4, 7, 10]]
     let ConvPos = {p, l1 ->
-          \map(deepcopy(p), {i, v -> map(v, {_, w -> [i + l1, w, i + l1, w]})})
+          \map(deepcopy(p), {i, v -> map(v, {_, w -> [i + l1, w, i + l1, w + 1]})})
           \->flatten(1)
           \}
     let Check = {l1, l2 ->
@@ -71,9 +71,9 @@ function s:suite.__GetMatchPosList__()
     END
     call setline(1, lines)
     call s:assert.equals(s:funcs.GetMatchPosList(1, 3, 'line1\nline2'),
-          \ [[1, 1, 2, 5]])
+          \ [[1, 1, 2, 6]])
     call s:assert.equals(s:funcs.GetMatchPosList(1, 3, '2\nline3'),
-          \ [[2, 5, 3, 5]])
+          \ [[2, 5, 3, 6]])
     call s:assert.equals(s:funcs.GetMatchPosList(1, 3, 'line2\nline2'),
           \ [])
   endfunction
@@ -101,7 +101,7 @@ function s:suite.__GetMatchPosList__()
     call setline(1, ['a, b', 'aa, b'])
     call s:assert.equals(
           \s:funcs.GetMatchPosList(1, 2, ',\zs'),
-          \[[1, 3, 1, 3], [2, 4, 2, 4]])
+          \[[1, 3, 1, 4], [2, 4, 2, 5]])
   endfunction
 
   function child.test_with_virtualedit_enabled()
@@ -125,7 +125,7 @@ function s:suite.__GetMatchPosList__()
     call setline(1, '\')
     call s:assert.equals(
           \s:funcs.GetMatchPosList(1, 1, '\zs\ze\'),
-          \[[1, 1, 1, 1]])
+          \[[1, 1, 1, 2]])
   endfunction
 endfunction
 

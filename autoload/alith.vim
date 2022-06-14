@@ -120,10 +120,6 @@ def Preview(line1: number, line2: number, reg: string)
   var curbufnr = GetCurrentBufnr()
   var poslist =
     CallInBuffer(curbufnr, function('GetMatchPosList', [line1, line2, reg, true]))
-    ->map((_, v) => {
-      v[3] += 1
-      return v
-    })
   var hlEolPoslist: list<list<number>>
   var matchHeadPoslist: list<list<number>>
   var prevline = 0
@@ -212,10 +208,11 @@ def GetMatchPosList(line1: number, line2: number, reg: string, checkTimeout: boo
       var endpos = searchpos(reg, 'ceW', line2, &redrawtime)
       if endpos == notFound
         # We don't know how long given regex matches actually, but we are sure
-        # that given regex matches at startpos. Let's make endpos equals to
-        # the startpos when the endpos is not found.
-        endpos = startpos
+        # that given regex matches at startpos. Let's assume the given regex
+        # matches the one character under the cursor.
+        endpos = copy(startpos)
       endif
+      endpos[1] += getline('.')->strpart(endpos[1] - 1)[0]->strlen()
 
       poslist->add(startpos + endpos)
 
