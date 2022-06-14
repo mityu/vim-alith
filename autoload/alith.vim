@@ -1,8 +1,10 @@
 vim9script
 
+highlight default link AlithMatch Search
+
 final propName = 'plugin-alith'
 if prop_type_get(propName) == {}
-  prop_type_add(propName, {highlight: 'IncSearch', priority: 100})
+  prop_type_add(propName, {highlight: 'AlithMatch', priority: 100})
 endif
 var hlPopupIdList: list<number>
 
@@ -138,7 +140,7 @@ def Preview(line1: number, line2: number, reg: string)
     for pos in hlEolPoslist
       var p = screenpos(curwinID, pos[0], pos[1])
       var popupID =
-        popup_create(' ', {line: p.row, col: p.col, highlight: 'IncSearch'})
+        popup_create(' ', {line: p.row, col: p.col, highlight: 'AlithMatch'})
       hlPopupIdList->add(popupID)
     endfor
   endif
