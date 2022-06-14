@@ -145,14 +145,37 @@ function s:suite.__Preview__()
     END
     call setline(1, lines)
     call s:funcs.Preview(1, 3, 'aaa')
-    call s:assert.equals(
-          \prop_list(1)->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')}),
-          \[#{col: 1, length: 3}])
 
-    call s:assert.equals(
-          \prop_list(3)->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')}),
-          \[#{col: 1, length: 3}, #{col: 5, length: 3}])
+    let props = prop_list(1, #{end_lnum: 3, types: ['plugin-alith-match']})
+          \->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')})
+    let expected = [
+          \#{lnum: 1, col: 1, length: 3},
+          \#{lnum: 3, col: 1, length: 3},
+          \#{lnum: 3, col: 5, length: 3}
+          \]
+    call s:assert.equals(props, expected)
+
+    let props = prop_list(1, #{end_lnum: 3, types: ['plugin-alith-match-head']})
+          \->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')})
+    let expected = [
+          \#{lnum: 1, col: 1, length: 1},
+          \#{lnum: 3, col: 1, length: 1},
+          \#{lnum: 3, col: 5, length: 1}
+          \]
+    call s:assert.equals(props, expected)
     call s:assert.true(empty(popup_list()))
+  endfunction
+
+  function child.test_show_matches_with_multibyte_characters()
+    call setline(1, 'いろは')
+    call s:funcs.Preview(1, 1, 'いろは')
+
+    let propMatch = prop_list(1, #{types: ['plugin-alith-match']})
+          \->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')})
+    let propMatchHead = prop_list(1, #{types: ['plugin-alith-match-head']})
+          \->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')})
+    call s:assert.equals(propMatch, [#{col: 1, length: strlen('いろは')}])
+    call s:assert.equals(propMatchHead, [#{col: 1, length: strlen('い')}])
   endfunction
 
   function child.test_clear_props_on_redraw()
@@ -163,7 +186,7 @@ function s:suite.__Preview__()
     call s:funcs.Preview(1, 1, 'aaa')
     call s:assert.equals(
           \prop_list(1)->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')}),
-          \[#{col: 1, length: 3}])
+          \[#{col: 1, length: 1}, #{col: 1, length: 3}])
     call s:funcs.Preview(1, 1, 'does not exist')
     call s:assert.equals(prop_list(1), [])
   endfunction
@@ -175,12 +198,17 @@ function s:suite.__Preview__()
     END
     call setline(1, lines)
     call s:funcs.Preview(1, 2, 'ine1\nlin')
-    call s:assert.equals(
-          \prop_list(1)->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')}),
-          \[#{col: 2, length: 5}])
-    call s:assert.equals(
-          \prop_list(2)->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')}),
-          \[#{col: 1, length: 3}])
+    let props = prop_list(1, #{types: ['plugin-alith-match']})
+          \->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')})
+    call s:assert.equals(props, [#{col: 2, length: 5}])
+
+    let props = prop_list(2, #{types: ['plugin-alith-match']})
+          \->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')})
+    call s:assert.equals(props, [#{col: 1, length: 3}])
+
+    let props = prop_list(1, #{end_lnum: 2, types: ['plugin-alith-match-head']})
+          \->map({_, v -> filter(v, 'v:key =~# "\\v<%(lnum|col|length)>"')})
+    call s:assert.equals(props, [#{lnum: 1, col: 2, length: 1}])
   endfunction
 
   function child.test_highlight_EOL_with_popup_window()

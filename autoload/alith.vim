@@ -1,10 +1,15 @@
 vim9script
 
 highlight default link AlithMatch Search
+highlight default link AlithMatchHead IncSearch
 
-final propName = 'plugin-alith'
-if prop_type_get(propName) == {}
-  prop_type_add(propName, {highlight: 'AlithMatch', priority: 100})
+final propMatchName = 'plugin-alith-match'
+if prop_type_get(propMatchName) == {}
+  prop_type_add(propMatchName, {highlight: 'AlithMatch', priority: 100})
+endif
+final propMatchHeadName = 'plugin-alith-match-head'
+if prop_type_get(propMatchHeadName) == {}
+  prop_type_add(propMatchHeadName, {highlight: 'AlithMatchHead', priority: 101})
 endif
 var hlPopupIdList: list<number>
 
@@ -120,27 +125,38 @@ def Preview(line1: number, line2: number, reg: string)
       return v
     })
   var hlEolPoslist: list<list<number>>
+  var matchHeadPoslist: list<list<number>>
   var prevline = 0
   var colEOL = 0
+  var linetext = ''
   for pos in poslist
     if prevline != pos[0]
       prevline = pos[0]
       colEOL = CallInBuffer(curbufnr, function('GetEOLCol', [pos[0]]))
+      linetext = getbufline(curbufnr, pos[0])[0]
     endif
     if pos[1] >= colEOL
       hlEolPoslist->add([pos[0], pos[1]])
+    else
+      matchHeadPoslist->add([
+        pos[0],
+        pos[1],
+        pos[0],
+        pos[1] + strpart(linetext, pos[1] - 1)[0]->strlen()
+      ])
     endif
   endfor
 
   ClearPreviewHighlights()
 
-  prop_add_list({bufnr: curbufnr, type: propName}, poslist)
+  prop_add_list({bufnr: curbufnr, type: propMatchName}, poslist)
+  prop_add_list({bufnr: curbufnr, type: propMatchHeadName}, matchHeadPoslist)
   if !empty(hlEolPoslist)
     var curwinID = bufwinid(curbufnr)
     for pos in hlEolPoslist
       var p = screenpos(curwinID, pos[0], pos[1])
       var popupID =
-        popup_create(' ', {line: p.row, col: p.col, highlight: 'AlithMatch'})
+        popup_create(' ', {line: p.row, col: p.col, highlight: 'AlithMatchHead'})
       hlPopupIdList->add(popupID)
     endfor
   endif
@@ -148,7 +164,8 @@ enddef
 
 def ClearPreviewHighlights()
   var curbufnr = GetCurrentBufnr()
-  prop_remove({type: propName, bufnr: curbufnr, all: true})
+  prop_remove({type: propMatchName, bufnr: curbufnr, all: true})
+  prop_remove({type: propMatchHeadName, bufnr: curbufnr, all: true})
   for id in hlPopupIdList
     popup_close(id)
   endfor
