@@ -228,6 +228,61 @@ function s:suite.__Preview__()
     call s:assert.equals(popupPos.scrollbar, 0, 'scrollbar')
   endfunction
 
+  function child.test_highlight_EOL_with_popupwin_in_multiple_windows()
+    if &lines < 10 || &columns < 15
+      call s:assert.skip('Not enough screen size; must be begger than 10x15.')
+    endif
+    botright new
+    wincmd p
+    botright vnew
+    wincmd p
+    resize 5
+    vertical resize 9
+    vsplit
+    wincmd p
+    "
+    " The current window layout:
+    " +--------------------------+
+    " |        |        |        |
+    " |  win1  |  win2  |        |
+    " |(curwin)|        |        |
+    " |        |        |        |
+    " |        |        |        |
+    " |--------+--------+--------|
+    " |                          |
+    " |                          |
+    " +--------------------------+
+    "
+
+    call setline(1, 'a')
+    call s:funcs.Preview(1, 1, 'a\zs')
+
+    " One popup is in win1, and the other popup is in win2.
+    let popupIDs = popup_list()
+    call s:assert.equals(len(popupIDs), 2)
+
+    " Test popup in win1.
+    normal! gg
+    let popupPos = popup_getpos(popupIDs[0])
+    call s:assert.equals(popupPos.col, screenpos(win_getid(), 1, col('$')).col, 'col')
+    call s:assert.equals(popupPos.line, screenpos(win_getid(), 1, col('$')).row, 'line')
+    call s:assert.equals(popupPos.width, 1, 'width')
+    call s:assert.equals(popupPos.height, 1, 'height')
+    call s:assert.equals(popupPos.visible, 1, 'visible')
+    call s:assert.equals(popupPos.scrollbar, 0, 'scrollbar')
+
+    " Test popup in win2.
+    wincmd p
+    normal! gg
+    let popupPos = popup_getpos(popupIDs[1])
+    call s:assert.equals(popupPos.col, screenpos(win_getid(), 1, col('$')).col, 'col')
+    call s:assert.equals(popupPos.line, screenpos(win_getid(), 1, col('$')).row, 'line')
+    call s:assert.equals(popupPos.width, 1, 'width')
+    call s:assert.equals(popupPos.height, 1, 'height')
+    call s:assert.equals(popupPos.visible, 1, 'visible')
+    call s:assert.equals(popupPos.scrollbar, 0, 'scrollbar')
+  endfunction
+
   function child.test_highlight_EOL_with_popup_window_with_multibyte_characters()
     call setline(1, 'あ')
     call s:funcs.Preview(1, 1, 'あ\zs')

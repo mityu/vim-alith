@@ -11,6 +11,10 @@ final propMatchHeadName = 'plugin-alith-match-head'
 if prop_type_get(propMatchHeadName) == {}
   prop_type_add(propMatchHeadName, {highlight: 'AlithMatchHead', priority: 101})
 endif
+final propMatchEOL = 'plugin-alith-match-eol'
+if prop_type_get(propMatchEOL) == {}
+  prop_type_add(propMatchEOL, {highlight: 'AlithMatch', priority: 100})
+endif
 var hlPopupIdList: list<number>
 
 export def Alith(line1: number, line2: number, cmdline_regex: string = '')
@@ -148,12 +152,30 @@ def Preview(line1: number, line2: number, reg: string)
   prop_add_list({bufnr: curbufnr, type: propMatchName}, poslist)
   prop_add_list({bufnr: curbufnr, type: propMatchHeadName}, matchHeadPoslist)
   if !empty(hlEolPoslist)
-    var curwinID = bufwinid(curbufnr)
+    var winIDs =
+        gettabinfo(tabpagenr())[0].windows
+        ->filter((_: number, v: number): bool => winbufnr(v) == curbufnr)
+    var propID = 0
     for pos in hlEolPoslist
-      var p = screenpos(curwinID, pos[0], pos[1])
-      var popupID =
-        popup_create(' ', {line: p.row, col: p.col, highlight: 'AlithMatchHead'})
-      hlPopupIdList->add(popupID)
+      prop_add(pos[0], pos[1], {
+        length: 0,
+        type: propMatchEOL,
+        id: propID
+      })
+      for winID in winIDs
+        var popupID = popup_create(' ', {
+          line: -1,
+          col: 0,
+          textprop: propMatchEOL,
+          textpropid: propID,
+          textpropwin: winID,
+          highlight: 'AlithMatchHead',
+          maxwidth: 1,
+          maxheight: 1,
+        })
+        hlPopupIdList->add(popupID)
+      endfor
+      propID += 1
     endfor
   endif
 enddef
@@ -162,6 +184,7 @@ def ClearPreviewHighlights()
   var curbufnr = GetCurrentBufnr()
   prop_remove({type: propMatchName, bufnr: curbufnr, all: true})
   prop_remove({type: propMatchHeadName, bufnr: curbufnr, all: true})
+  prop_remove({type: propMatchEOL, bufnr: curbufnr, all: true})
   for id in hlPopupIdList
     popup_close(id)
   endfor
