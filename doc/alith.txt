@@ -1,0 +1,133 @@
+*alith.txt*		A text-align plugin for Vim9
+
+Maintainer: mityu
+License: MIT License
+==============================================================================
+CONTENTS                                                  *alith-contents*
+
+INTRODUCTION                  |alith-introduction|
+REQUIREMENTS                  |alith-requirements|
+COMMANDS                      |alith-commands|
+CUSTOMIZE                     |alith-customize|
+
+
+==============================================================================
+INTRODUCTION						*alith-introduction*
+
+*alith* is a Vim plugin to align texts.
+
+Align text by ",": >
+	a, bbb, c
+	aa, b, ccc
+<
+	    |
+	    |   `:%Alith ,`
+	    v
+>
+	a , bbb, c
+	aa, b  , ccc
+<
+
+Align text by "|": >
+	|AAA|BBB|CCC|
+	|:--|:-:|--:|
+	|a|b|c|
+<
+	    |
+	    |   `:%Alith |`
+	    v
+>
+	|AAA|BBB|CCC|
+	|:--|:-:|--:|
+	|a  |b  |c  |
+<
+
+
+==============================================================================
+REQUIREMENTS						*alith-requirements*
+
+ - The latest version of Vim.
+ - |+textprop|
+ - |+popupwin|
+ - |+reltime|
+
+Note that since this plugin is written in |Vim9-script|, this plugin does not
+work on NeoVim.
+
+==============================================================================
+COMMANDS						*alith-commands*
+
+:[range]Alith [{regex}]					*:Alith*
+	Format text between [range].
+	The text separator can be specified as {regex}. If {regex} is omitted,
+	the |input()| dialog is opened to input {regex}. With this dialog, the
+	matched text will be highlighted interactively like the 'incsearch'
+	feature. If the elapsed time to highlight matches overs 'redrawtime',
+	this plugin automatically gives up highlight all matches in order not
+	to freeze Vim.
+	Examples:
+	- Align text by ",": >
+		a, bbb, c
+		aa, b, ccc
+<
+		    |
+		    |   `:%Alith ,`
+		    v
+>
+		a , bbb, c
+		aa, b  , ccc
+<
+	- Align text by "\" or the EOL: >
+		hoge \
+		foo \
+		piyopiyo
+<
+		    |
+		    |   `:%Alith \\\?$`
+		    v
+>
+		hoge    \
+		foo     \
+		piyopiyo
+<
+	- |/\zs| is useful to align text by after some text. Align text by
+	  after ":": >
+		hoge: fuga
+		foo: bar
+<
+		    |
+		    |   `:%Alith :\zs`
+		    v
+>
+		hoge: fuga
+		foo:  bar
+<
+
+==============================================================================
+CUSTOMIZE						*alith-customize*
+
+You can change colors for highlight matched text with the following highlight
+groups.
+
+AlithMatch						*hl-AlithMatch*
+						(Default: |hl-Search|)
+	Used to highlight matched text.
+
+AlithMatchHead						*hl-AlithMatchHead*
+						(Default: |hl-IncSearch|)
+	Used to highlight the first character of matched text.
+
+	Example:
+	Colors for highlighting matched text, "abcdefg": >
+			abcdefg
+			*~~~~~~
+			^   ^
+			|   |
+			| AlithMatch
+			|
+			|
+		 AlithMatchHead
+<
+
+==============================================================================
+vim:tw=78:fo=tcq2mM:ts=8:ft=help:norl
