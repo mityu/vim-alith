@@ -132,7 +132,7 @@ def Preview(line1: number, line2: number, reg: string)
   for pos in poslist
     if prevline != pos[0]
       prevline = pos[0]
-      colEOL = CallInBuffer(curbufnr, function('GetEOLCol', [pos[0]]))
+      colEOL = CallInBuffer(curbufnr, () => col([pos[0], '$']))
       linetext = getbufline(curbufnr, pos[0])[0]
     endif
     if pos[1] >= colEOL
@@ -270,18 +270,6 @@ def IsValidRegex(reg: string): bool
     return false
   endtry
   return true
-enddef
-
-def GetEOLCol(line: number): number
-  var curpos = getcurpos()
-  var colEOL = 0
-  try
-    cursor(line, 1)
-    colEOL = col('$')
-  finally
-    setpos('.', curpos)
-  endtry
-  return colEOL
 enddef
 
 def GetCurrentBufnr(): number
