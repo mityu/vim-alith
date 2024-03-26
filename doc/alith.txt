@@ -46,13 +46,13 @@ Align text by "|": >
 ==============================================================================
 REQUIREMENTS						*alith-requirements*
 
- - The latest version of Vim.
+ - Vim 9.0.0000 or later.
  - |+textprop|
  - |+popupwin|
  - |+reltime|
 
 Note that since this plugin is written in |Vim9-script|, this plugin does not
-work on NeoVim.
+work on Neovim.
 
 ==============================================================================
 COMMANDS						*alith-commands*
